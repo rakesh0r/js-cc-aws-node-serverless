@@ -1,9 +1,33 @@
-# js-cc-aws-node-serverless
+# Serverless Framework Node with Typescript HTTP API on AWS
 
-Created Serverless api for products
+This template demonstrates how to make a simple HTTP API with Node.js and Typescript running on AWS Lambda and API Gateway using the Serverless Framework v3.
 
-## Api paths
+This template does not include any kind of persistence (database). For more advanced examples, check out the [serverless/examples repository](https://github.com/serverless/examples) which includes Typescript, Mongo, DynamoDB and other examples.
 
-https://aeeugzrdll.execute-api.us-east-1.amazonaws.com/dev/products
+## Setup
 
-https://aeeugzrdll.execute-api.us-east-1.amazonaws.com/dev/products/{productId}
+Run this command to initialize a new project in a new working directory.
+
+```
+npm install
+```
+
+## Usage
+
+**Deploy**
+
+```
+$ serverless deploy
+```
+
+**Invoke the function locally.**
+
+```
+serverless invoke local --function getProductsList
+```
+
+**Invoke the function**
+
+```
+curl https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/
+```
