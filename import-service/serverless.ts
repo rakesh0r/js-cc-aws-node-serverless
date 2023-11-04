@@ -12,6 +12,17 @@ const serverlessConfiguration: AWS = {
     runtime: 'nodejs14.x',
     stage: "dev",
     region: "us-east-1",
+    httpApi: {
+      authorizers: {
+        customAuthorizer: {
+          name: 'customAuthorizer',
+          type: 'request',
+          functionArn: 'arn:aws:lambda:${self:provider.region}:${aws:accountId}:function:authorization-service-dev-basicAuthorizer',
+          payloadVersion:'2.0',
+          enableSimpleResponses: true,
+        }
+      }
+    },
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
