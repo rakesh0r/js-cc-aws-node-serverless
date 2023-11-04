@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { DynamoDB } from 'aws-sdk';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, SQSBatchResponse, SQSEvent, SQSMessageAttributes } from "aws-lambda";
+import { DynamoDB, SNS } from 'aws-sdk';
 import * as uuid from 'uuid';
 
 const dynamoDb = new DynamoDB.DocumentClient()
@@ -148,3 +148,56 @@ export const createProduct = async (event: APIGatewayProxyEvent): Promise<APIGat
     };
   }
 };
+
+export const catalogBatchProcess = async (event: SQSEvent): Promise<SQSBatchResponse> => {
+  try {
+    const sns = new SNS();
+    for (const record of event.Records) {
+      console.log('Message Body -->  ', record.body);
+      const data = JSON.parse(record.body);
+      const id =  uuid.v4();
+      const products_params = {
+        TableName: process.env.PRODUCTS_TABLE,
+        Item: {
+          id,
+          title: data.title,
+          description: data.description,
+          price: data.price
+        }
+      };
+
+      const stocks_params = {
+        TableName: process.env.STOCKS_TABLE,
+        Item: {
+          'product_id': id,
+          count: data.count || 0
+        }
+      };
+
+      // With transaction API
+      await dynamoDb.transactWrite({
+        ReturnConsumedCapacity: "INDEXES",
+        ReturnItemCollectionMetrics: "SIZE",
+        TransactItems: [
+          {
+            Put: products_params,
+          },
+          {
+            Put: stocks_params,
+          }
+        ]
+      }).promise();
+
+      const snsParams = {
+        Message: JSON.stringify({...data, id }), 
+        Subject: "New Prodcut created",
+        TopicArn: process.env.SNSTopicArn
+      };
+      await sns.publish(snsParams).promise();
+    }
+    return;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
