@@ -22,6 +22,7 @@ const serverlessConfiguration: AWS = {
       REGION: "us-east-1",
       STAGE: "dev",
       BUCKET: "cloudx-aws-shop",
+      SQS_URL: "https://sqs.us-east-1.amazonaws.com/${aws:accountId}/catalogItemsQueue"
     },
     iam: {
       role: {
@@ -35,6 +36,11 @@ const serverlessConfiguration: AWS = {
             Effect: "Allow",
             Action: ["s3:*"],
             Resource: "arn:aws:s3:::cloudx-aws-shop/*",
+          },
+          {
+            Effect: "Allow",
+            Action: ["sqs:SendMessage"],
+            Resource: "arn:aws:sqs:us-east-1:*:catalogItemsQueue",
           },
         ],
       },
